@@ -906,7 +906,9 @@ footer{background:var(--ink-900);color:#B9C2BB;padding:70px 0 30px;margin-top:0}
   max-height:90dvh;
 }
 .modal.show .m-card{transform:none}
-.m-media{position:relative;min-height:320px}
+.m-media{position:relative;min-height:320px;background:var(--linen-100)}
+/* En la vista rápida mostramos la foto ENTERA (sin recortar) sobre fondo lino */
+.m-media .p-img{object-fit:contain;background:var(--linen-100)}
 .m-body{padding:32px;display:flex;flex-direction:column;gap:12px;overflow-y:auto}
 .m-body h3{font-size:1.5rem;font-weight:800;letter-spacing:-.02em;line-height:1.15}
 .m-body .desc{font-size:.92rem;color:var(--ink-600);line-height:1.65}
@@ -934,6 +936,14 @@ footer{background:var(--ink-900);color:#B9C2BB;padding:70px 0 30px;margin-top:0}
 .show-more-wrap{grid-column:1/-1;display:flex;justify-content:center;padding:14px 0 4px}
 .show-more-wrap .btn{gap:10px}
 .sm-count{opacity:.65;font-size:.82em;font-weight:600}
+/* Paginación de la tienda */
+.pagination{grid-column:1/-1;display:flex;justify-content:center;align-items:center;gap:6px;flex-wrap:wrap;padding:24px 0 4px}
+.pg-btn{min-width:40px;height:40px;padding:0 12px;border-radius:10px;border:1px solid var(--linen-200);
+  background:var(--white);font-weight:700;font-size:.9rem;color:var(--ink-600);cursor:pointer;transition:all .2s}
+.pg-btn:hover:not(:disabled){border-color:var(--grass-500);color:var(--grass-600)}
+.pg-btn.active{background:var(--pine-900);color:var(--linen-50);border-color:var(--pine-900)}
+.pg-btn:disabled{opacity:.4;cursor:default}
+.pg-ellipsis{padding:0 4px;color:var(--ink-400);font-weight:700}
 
 /* ---------- Artículos / blog ---------- */
 .art-head{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:26px}
@@ -1973,13 +1983,19 @@ const CAT_LABEL = {felpudos:'Felpudos', alfombras:'Alfombras', cesped:'Césped a
    subcategorías se construye sola con las etiquetas que existan en la
    categoría activa. En modo demo las asignamos por id; en live llegan de
    las etiquetas de producto de WooCommerce (con su nombre real). */
-const TAG_LABEL = {clasicos:'Clásicos', divertidos:'Divertidos', personalizados:'Personalizados',
-  frikis:'Frikis', originales:'Originales', resistentes:'Resistentes', infantiles:'Infantiles',
-  exterior:'Exterior', naturales:'Naturales'};
+const TAG_LABEL = {clasicos:'Clásicos', divertidos:'Divertidos', frikis:'Frikis',
+  originales:'Originales', personalizados:'Personalizados', mascotas:'Mascotas',
+  infantiles:'Infantiles'};
+/* Cada estilo agrupa VARIOS felpudos (como las subcategorías de la web). */
 const DEMO_TAGS = {
-  fc01:['clasicos'], fc02:['divertidos','originales'], fc03:['divertidos','frikis'],
-  fc04:['clasicos'], fg01:['resistentes','exterior'], fp01:['clasicos'], fk01:['originales'],
-  fa01:['personalizados'],
+  fc01:['clasicos'],
+  fc02:['divertidos','frikis','originales'],
+  fc03:['divertidos','frikis'],
+  fc04:['clasicos'],
+  fg01:['clasicos'],
+  fp01:['clasicos'],
+  fk01:['originales','clasicos'],
+  fa01:['personalizados','mascotas'],
   ai01:['infantiles'], ai02:['infantiles'],
 };
 PRODUCTS.forEach(p => { if (DEMO_TAGS[p.id]) p.tags = DEMO_TAGS[p.id]; });
@@ -2118,11 +2134,27 @@ function cardHTML(p, i = 0){
     </article>`;
 }
 
-let gridLimit = 8;
-const GRID_STEP = 8;
+let gridPage = 1;
+const PER_PAGE = 8;
 
-function renderProducts(resetLimit = false){
-  if (resetLimit) gridLimit = GRID_STEP;
+/* Paginación numerada (con « », ventana de páginas y elipsis si hay muchas) */
+function paginationHTML(page, total){
+  if (total <= 1) return '';
+  const btn = (p, label, o = {}) =>
+    `<button class="pg-btn${o.active ? ' active' : ''}" ${o.disabled ? 'disabled' : ''} data-page="${p}" aria-label="${o.aria || ('Página ' + p)}"${o.active ? ' aria-current="page"' : ''}>${label}</button>`;
+  const pages = [];
+  for (let i = 1; i <= total; i++){
+    if (i === 1 || i === total || (i >= page - 1 && i <= page + 1)) pages.push(i);
+    else if (pages[pages.length - 1] !== '…') pages.push('…');
+  }
+  let html = btn(page - 1, '‹', {disabled: page === 1, aria: 'Página anterior'});
+  pages.forEach(p => html += p === '…' ? '<span class="pg-ellipsis">…</span>' : btn(p, String(p), {active: p === page}));
+  html += btn(page + 1, '›', {disabled: page === total, aria: 'Página siguiente'});
+  return `<div class="pagination" id="pagination" role="navigation" aria-label="Paginación de productos">${html}</div>`;
+}
+
+function renderProducts(resetPage = false){
+  if (resetPage) gridPage = 1;
   let list = PRODUCTS.filter(p =>
     (activeFilter === 'todo' || p.cat === activeFilter) &&
     (activeSub === null || (p.tags || []).includes(activeSub)) &&
@@ -2136,15 +2168,21 @@ function renderProducts(resetLimit = false){
     grid.innerHTML = `<div class="no-results">No hemos encontrado productos para «${searchTerm}».<br>Prueba con otra búsqueda o cambia de categoría.</div>`;
     return;
   }
-  const shown = list.slice(0, gridLimit);
-  const rest = list.length - shown.length;
-  grid.innerHTML = shown.map((p,i) => cardHTML(p, Math.min(i, 11))).join('') +
-    (rest > 0 ? `
-    <div class="show-more-wrap">
-      <button class="btn btn-dark" id="showMore">Mostrar más productos <span class="sm-count">+${Math.min(GRID_STEP, rest)} de ${rest}</span></button>
-    </div>` : '');
-  const sm = document.getElementById('showMore');
-  if (sm) sm.addEventListener('click', () => { gridLimit += GRID_STEP; renderProducts(); });
+  const totalPages = Math.max(1, Math.ceil(list.length / PER_PAGE));
+  if (gridPage > totalPages) gridPage = totalPages;
+  if (gridPage < 1) gridPage = 1;
+  const start = (gridPage - 1) * PER_PAGE;
+  const shown = list.slice(start, start + PER_PAGE);
+  grid.innerHTML = shown.map((p,i) => cardHTML(p, Math.min(i, 11))).join('') + paginationHTML(gridPage, totalPages);
+
+  const pg = document.getElementById('pagination');
+  if (pg) pg.addEventListener('click', e => {
+    const b = e.target.closest('.pg-btn');
+    if (!b || b.disabled) return;
+    gridPage = +b.dataset.page;
+    renderProducts();
+    document.getElementById('tienda').scrollIntoView({behavior:'smooth', block:'start'});
+  });
 }
 renderProducts();
 
@@ -4197,9 +4235,16 @@ function persoValidate(){
       sizes: null,
       variable: w.type === 'variable',
       variations: w.variations || [],
-      /* Etiquetas de producto Woo → subcategorías (estilos: divertidos, frikis…).
-         Guardamos el nombre real para mostrarlo en los chips. */
-      tags: (w.tags || []).map(t => { if (t.slug) TAG_LABEL[t.slug] = t.name; return t.slug; }).filter(Boolean),
+      /* Subcategorías (estilos: divertidos, frikis, mascotas…) = categorías
+         HIJAS de Woo (las de la navegación) + etiquetas de producto, excluyendo
+         las 5 categorías principales. Guardamos el nombre real para los chips. */
+      tags: (function(){
+        const MAIN = ['felpudos','alfombras','cesped','cesped-artificial','cesped-artificiales','cortinas','accesorios','sin-categorizar','uncategorized'];
+        const out = [];
+        (w.categories || []).forEach(c => { if (c.slug && MAIN.indexOf(c.slug) === -1){ TAG_LABEL[c.slug] = c.name; if (out.indexOf(c.slug) === -1) out.push(c.slug); } });
+        (w.tags || []).forEach(t => { if (t.slug){ TAG_LABEL[t.slug] = t.name; if (out.indexOf(t.slug) === -1) out.push(t.slug); } });
+        return out;
+      })(),
       /* Personalizable = el plugin lo marca (tiene campos WAPF/APF) o el producto
          exige opciones antes de comprar. La tarjeta mostrará "Personalizar". */
       personalizable: (Array.isArray(CFG.persoIds) && CFG.persoIds.indexOf(w.id) !== -1)
