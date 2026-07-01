@@ -8,6 +8,7 @@
 <meta name="robots" content="index, follow, max-image-preview:large">
 <meta name="author" content="Lucatex Ibérica S.L.">
 <meta name="theme-color" content="#13241B">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTQiIGZpbGw9IiMxMzI0MUIiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNGQkY5RjQiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNMTAgMzQgTDMwIDE1IEwzMCA5IEwzOCA5IEwzOCAxNiBMNTQgMzQiLz48cGF0aCBkPSJNMTcgMzAgVjUwIEg0NyBWMzAiLz48cmVjdCB4PSIyOCIgeT0iMzgiIHdpZHRoPSI4IiBoZWlnaHQ9IjgiLz48L2c+PC9zdmc+">
 <link rel="canonical" href="https://www.lucahome.es/" id="seoCanonical">
 <!-- Open Graph -->
 <meta property="og:type" content="website" id="ogType">
@@ -158,9 +159,10 @@ header.site.scrolled{box-shadow:var(--shadow-1)}
   height:var(--header-h);display:flex;align-items:center;gap:26px;
   max-width:var(--maxw);margin:0 auto;padding:0 24px;
 }
-.logo{display:flex;align-items:baseline;gap:2px;font-family:var(--font-display);font-weight:800;font-size:1.5rem;letter-spacing:-.02em;color:var(--pine-900)}
+.logo{display:flex;align-items:center;gap:8px;font-family:var(--font-display);font-weight:800;font-size:1.5rem;letter-spacing:-.02em;color:var(--pine-900)}
 .logo .dot{color:var(--gold-500)}
 .logo small{font-size:.6rem;font-weight:600;letter-spacing:.22em;color:var(--ink-400);margin-left:8px;text-transform:uppercase}
+.brand-mark{flex-shrink:0;display:block}
 .nav-links{display:flex;gap:4px;margin-left:6px}
 .nav-links a{
   position:relative;padding:9px 13px;border-radius:99px;font-weight:600;font-size:.93rem;color:var(--ink-600);
@@ -1333,7 +1335,14 @@ footer{background:var(--ink-900);color:#B9C2BB;padding:70px 0 30px;margin-top:0}
 <!-- ============ HEADER ============ -->
 <header class="site" id="siteHeader">
   <nav class="nav">
-    <a href="#top" class="logo">Luca<span style="color:var(--grass-600)">home</span><span class="dot">.</span><small>by Lucatex</small></a>
+    <a href="#top" class="logo">
+      <svg class="brand-mark" width="28" height="26" viewBox="0 0 64 60" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M6 30 L27 10 L27 4 L36 4 L36 12 L58 30" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M14 26 V54 H50 V26" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="27" y="36" width="10" height="10" stroke="currentColor" stroke-width="5"/>
+      </svg>
+      Luca<span style="color:var(--grass-600)">home</span><span class="dot">.</span><small>by Lucatex</small>
+    </a>
     <div class="nav-links">
       <a href="#/categoria/felpudos" data-catlink="felpudos">Felpudos</a>
       <a href="#/categoria/alfombras" data-catlink="alfombras">Alfombras</a>
@@ -1760,7 +1769,14 @@ footer{background:var(--ink-900);color:#B9C2BB;padding:70px 0 30px;margin-top:0}
   <div class="wrap">
     <div class="f-grid">
       <div class="f-brand">
-        <a href="#top" class="logo" style="color:#fff">Luca<span style="color:var(--grass-300)">home</span><span class="dot">.</span></a>
+        <a href="#top" class="logo" style="color:#fff">
+          <svg class="brand-mark" width="26" height="24" viewBox="0 0 64 60" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M6 30 L27 10 L27 4 L36 4 L36 12 L58 30" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M14 26 V54 H50 V26" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+            <rect x="27" y="36" width="10" height="10" stroke="currentColor" stroke-width="5"/>
+          </svg>
+          Luca<span style="color:var(--grass-300)">home</span><span class="dot">.</span>
+        </a>
         <p>Tienda online de felpudos, alfombras, cortinas y césped artificial. Lucatex Ibérica S.L. — C/ Catedrática Maruja Pastor 18, 03550 San Juan, Alicante.</p>
         <div class="pay-badges"><span>VISA</span><span>MASTERCARD</span><span>PAYPAL</span><span>BIZUM</span></div>
       </div>

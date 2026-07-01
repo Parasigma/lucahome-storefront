@@ -44,7 +44,7 @@ add_action( 'admin_menu', function () {
 		'manage_options',
 		'lucahome-storefront',
 		'lucahome_sf_render_admin',
-		'dashicons-store',
+		'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2MCIgZmlsbD0ibm9uZSI+PHBhdGggZD0iTTYgMzAgTDI3IDEwIEwyNyA0IEwzNiA0IEwzNiAxMiBMNTggMzAiIHN0cm9rZT0iYmxhY2siIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTE0IDI2IFY1NCBINTAgVjI2IiBzdHJva2U9ImJsYWNrIiBzdHJva2Utd2lkdGg9IjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxyZWN0IHg9IjI3IiB5PSIzNiIgd2lkdGg9IjEwIiBoZWlnaHQ9IjEwIiBzdHJva2U9ImJsYWNrIiBzdHJva2Utd2lkdGg9IjUiLz48L3N2Zz4=',
 		58
 	);
 } );
