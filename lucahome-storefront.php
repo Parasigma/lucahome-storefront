@@ -3,7 +3,7 @@
  * Plugin Name:       Lucahome Storefront
  * Plugin URI:        https://www.lucahome.es/
  * Description:       Sirve la portada moderna de Lucahome (3D, fichas de producto, SEO) conectada al catálogo y carrito de WooCommerce mediante la Store API. Compatible con el flujo PrestaShop → WooCommerce: el frontend lee siempre lo que haya sincronizado en Woo. Uso: crea una página y asígnale la plantilla "Lucahome Storefront".
- * Version:           1.4.2
+ * Version:           1.4.3
  * Update URI:        https://github.com/Parasigma/lucahome-storefront
  * Author:            Lucahome · Lucatex Ibérica S.L.
  * Requires at least: 6.0
@@ -13,6 +13,10 @@
 
 /*
  * CHANGELOG
+ * 1.4.3  Sección "Por qué Lucahome": el titular hace ahora el juego de palabras
+ *        con la alfombra roja ("roja" tachado, "verde" en el verde de la
+ *        marca). Las tarjetas pasan a 2×2 con una foto del almacén al lado
+ *        derecho (archivo `assets/almacen.jpg`, pendiente de añadir).
  * 1.4.2  Logo: cabecera y pie de página usan ahora la imagen REAL del logotipo
  *        de la marca (el que envió el cliente), en vez del icono dibujado a
  *        mano de la versión anterior. En el pie se invierte a blanco para
@@ -64,7 +68,7 @@
 if ( ! defined( 'ABSPATH' ) ) exit;
 
 define( 'LUCAHOME_SF_TEMPLATE', 'lucahome-storefront.php' );
-define( 'LUCAHOME_SF_VERSION', '1.4.2' );
+define( 'LUCAHOME_SF_VERSION', '1.4.3' );
 
 require_once __DIR__ . '/includes/rest-personalization.php';
 require_once __DIR__ . '/includes/rest-variations.php';
