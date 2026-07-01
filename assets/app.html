@@ -975,6 +975,29 @@ footer{background:var(--ink-900);color:#B9C2BB;padding:70px 0 30px;margin-top:0}
 .cat-seo p{margin-bottom:10px}
 .cat-count{font-size:.82rem;color:var(--ink-400);margin:14px 0 24px}
 
+/* ---------- Ficha de artículo (lectura) ---------- */
+.post-wrap{max-width:76ch;margin:0 auto;padding:26px 24px 90px}
+.post-eyebrow{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--grass-600);font-weight:700}
+.post-h1{font-family:var(--font-display);font-size:clamp(1.9rem,4vw,2.7rem);font-weight:800;letter-spacing:-.02em;color:var(--ink-900);line-height:1.15;margin:10px 0 16px}
+.post-meta{display:flex;align-items:center;gap:10px;font-size:.82rem;color:var(--ink-400);margin-bottom:26px}
+.post-meta .sep{opacity:.5}
+.post-cover{border-radius:var(--radius-lg);overflow:hidden;height:340px;margin-bottom:32px;position:relative;background:var(--linen-100);box-shadow:var(--shadow-1)}
+.post-cover img,.post-cover .tx{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.post-content{font-size:1.02rem;line-height:1.8;color:var(--ink-700)}
+.post-content p{margin-bottom:20px}
+.post-content h2{font-family:var(--font-display);font-weight:800;font-size:1.45rem;color:var(--ink-900);margin:36px 0 14px;letter-spacing:-.01em}
+.post-content h3{font-family:var(--font-display);font-weight:700;font-size:1.18rem;color:var(--ink-900);margin:28px 0 12px}
+.post-content ul,.post-content ol{margin:0 0 20px 22px}
+.post-content li{margin-bottom:8px}
+.post-content strong{color:var(--ink-900)}
+.post-content img{max-width:100%;border-radius:var(--radius-md);margin:8px 0 20px}
+.post-content blockquote{border-left:3px solid var(--gold-500);padding:6px 0 6px 18px;margin:0 0 20px;font-style:italic;color:var(--ink-600)}
+.post-cta{margin-top:44px;padding:28px;border-radius:var(--radius-lg);background:var(--pine-900);color:var(--linen-50);display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.post-cta p{margin:0;font-weight:600}
+.post-back{display:inline-flex;align-items:center;gap:8px;color:var(--grass-600);font-weight:700;font-size:.9rem;margin-top:40px}
+.post-back:hover{color:var(--pine-800)}
+@media (max-width:640px){.post-cover{height:220px}}
+
 /* ============================================================
    FICHA DE PRODUCTO (PDP)
    ============================================================ */
@@ -1728,6 +1751,9 @@ footer{background:var(--ink-900);color:#B9C2BB;padding:70px 0 30px;margin-top:0}
 
 <!-- ============ PÁGINA DE CATEGORÍA (SPA, permalink #/categoria/slug) ============ -->
 <main id="catView" class="pdp" hidden></main>
+
+<!-- ============ FICHA DE ARTÍCULO (SPA, permalink #/articulo/slug) ============ -->
+<main id="postView" class="pdp" hidden></main>
 
 <!-- ============ FOOTER ============ -->
 <footer>
@@ -3795,28 +3821,161 @@ function closeCat(){
 }
 
 /* =====================================================
+   FICHA DE ARTÍCULO · permalink #/articulo/{slug}
+   Lectura completa dentro de la SPA (misma marca y CSS que
+   el resto de la tienda) en vez de saltar al tema nativo de
+   WordPress. En modo conectado el contenido llega vía
+   wp/v2/posts (título, fecha, imagen destacada y content.rendered).
+   ===================================================== */
+const postView = document.getElementById('postView');
+
+function renderPostHTML(a){
+  const cover = a.img
+    ? `<div class="post-cover"><img src="${a.img}" alt="${a.title}"></div>`
+    : `<div class="post-cover"><div class="tx ${a.tx || 'tx-coco'}"></div></div>`;
+  postView.innerHTML = `
+  <div class="post-wrap">
+    <nav class="breadcrumb" aria-label="Miga de pan">
+      <a href="#top">Inicio</a><span class="sep">›</span>
+      <a href="#articulos">El rincón del hogar</a><span class="sep">›</span>
+      <span aria-current="page">${a.title}</span>
+    </nav>
+    <span class="post-eyebrow">Ideas y consejos</span>
+    <h1 class="post-h1">${a.title}</h1>
+    <div class="post-meta"><span>${a.date}</span><span class="sep">·</span><span>Lucahome</span></div>
+    ${cover}
+    <div class="post-content">${a.content || `<p>${a.exc || ''}</p>`}</div>
+    <div class="post-cta">
+      <p>¿Listo para renovar tu terraza o tu entrada?</p>
+      <a class="btn" href="#tienda">Ver la tienda</a>
+    </div>
+    <a class="post-back" href="#articulos">← Volver a artículos</a>
+  </div>`;
+  window.scrollTo(0, 0);
+}
+
+function openPost(slug){
+  homeView.hidden = true;
+  pdpView.hidden = true; pdpView.innerHTML = ''; pdpProduct = null;
+  catView.hidden = true; catView.innerHTML = '';
+  postView.hidden = false;
+
+  const cached = window.LUCA.posts && window.LUCA.posts[slug];
+  if (cached){
+    showPost(cached);
+    return;
+  }
+  if (window.LUCAHOME_CONFIG && window.LUCAHOME_CONFIG.postsUrl){
+    const url = window.LUCAHOME_CONFIG.postsUrl + '?slug=' + encodeURIComponent(slug) + '&_embed=1';
+    fetch(url, {credentials:'include'}).then(r => r.ok ? r.json() : []).then(list => {
+      const w = list && list[0];
+      if (!w){ location.hash = '#articulos'; return; }
+      const img = (w._embedded && w._embedded['wp:featuredmedia'] && w._embedded['wp:featuredmedia'][0] &&
+        w._embedded['wp:featuredmedia'][0].source_url) || null;
+      const a = {
+        slug: w.slug,
+        title: postExcerpt(w.title && w.title.rendered),
+        exc: postExcerpt(w.excerpt && w.excerpt.rendered).slice(0, 160),
+        content: (w.content && w.content.rendered) || '',
+        date: new Date(w.date).toLocaleDateString('es-ES', {day:'numeric', month:'long', year:'numeric'}),
+        img, permalink: w.link,
+      };
+      window.LUCA.posts[a.slug] = a;
+      showPost(a);
+    }).catch(() => { location.hash = '#articulos'; });
+    return;
+  }
+  location.hash = '#articulos';
+}
+
+function showPost(a){
+  renderPostHTML(a);
+  const url = a.permalink || `${SITE_URL}blog/${a.slug}/`;
+  const plain = postExcerpt(a.exc || a.content).slice(0, 158);
+  setSEO({
+    title: `${a.title} | Blog Lucahome`,
+    desc: plain,
+    url, type: 'article',
+  });
+  document.getElementById('seoProduct').textContent = JSON.stringify({
+    "@context": "https://schema.org",
+    "@graph": [
+      {"@type":"BreadcrumbList","itemListElement":[
+        {"@type":"ListItem","position":1,"name":"Inicio","item":SITE_URL},
+        {"@type":"ListItem","position":2,"name":"El rincón del hogar","item":SITE_URL + '#articulos'},
+        {"@type":"ListItem","position":3,"name":a.title,"item":url}
+      ]},
+      {"@type":"BlogPosting","headline":a.title,"description":plain,"url":url,
+       "image": a.img ? [a.img] : undefined,
+       "author":{"@type":"Organization","name":"Lucahome"},
+       "publisher":{"@type":"Organization","name":"Lucahome"},
+       "mainEntityOfPage":{"@type":"WebPage","@id":url}}
+    ]
+  });
+}
+
+function closePost(){
+  if (postView.hidden) return;
+  postView.hidden = true;
+  postView.innerHTML = '';
+}
+
+/* =====================================================
    BLOG · "El rincón del hogar"
    El contenido vive en WordPress (entradas normales con
    Yoast, sitemap e indexación nativa). Este bloque pinta
    las últimas entradas; en demo, tres artículos de muestra.
    ===================================================== */
 window.DEMO_POSTS = [
-  {title:'Cómo elegir la altura de tu césped artificial (guía 2026)', date:'2 de junio de 2026',
+  {slug:'altura-cesped-artificial-guia', title:'Cómo elegir la altura de tu césped artificial (guía 2026)', date:'2 de junio de 2026',
    exc:'De 7 a 45 mm: qué altura conviene para terrazas, piscinas, niños y mascotas, y los errores más comunes al elegir.',
-   link:'#articulos', tx:'tx-grass-pro'},
-  {title:'Felpudo de coco: por qué sigue siendo el rey de las entradas', date:'19 de mayo de 2026',
+   tx:'tx-grass-pro',
+   content:`<p>Elegir la altura de fibra correcta es la decisión que más condiciona el resultado final de una instalación de <strong>césped artificial</strong>. No existe una altura "mejor" en absoluto: depende del uso que le vayas a dar al espacio, de si hay niños o mascotas, y de si buscas un aspecto natural o de tipo campo de golf.</p>
+     <h2>Alturas bajas (7-16 mm): tránsito intenso y zonas de juego</h2>
+     <p>Los modelos como el <strong>YESTE 7 mm</strong> o el <strong>CAIRO 16 mm</strong> son los más resistentes al pisoteo constante. Recuperan su verticalidad rápido y son la opción recomendada para zonas de paso, patios pequeños o donde los niños vayan a jugar a diario.</p>
+     <h2>Alturas medias (18-24 mm): el equilibrio para terrazas y piscinas</h2>
+     <p>Es el rango más vendido. El <strong>ZANZÍBAR 24 mm</strong> combina un tacto mullido bajo el pie descalzo con un buen drenaje, ideal para el borde de piscina. Aporta un aspecto denso y natural sin sacrificar durabilidad.</p>
+     <h2>Alturas altas (33-45 mm): la gama premium</h2>
+     <p>El <strong>PIRINEOS 40 mm</strong> o el <strong>LUCALUX 45 mm</strong> están pensados para jardines decorativos de bajo tránsito, donde prima el efecto visual "de prado". No son la mejor opción si hay mucho movimiento, porque tardan más en recuperar la fibra tras pisarlas.</p>
+     <h3>Errores más comunes</h3>
+     <ul><li>Elegir una fibra muy alta para una zona de paso constante.</li><li>No comprobar el drenaje (litros/m²·min) si hay piscina cerca.</li><li>Olvidar la cinta de unión y las piquetas en el presupuesto inicial.</li></ul>
+     <p>Si tienes dudas sobre qué modelo encaja con tu espacio, en Lucahome enviamos muestras físicas antes de comprar el rollo completo.</p>`},
+  {slug:'felpudo-coco-por-que-elegirlo', title:'Felpudo de coco: por qué sigue siendo el rey de las entradas', date:'19 de mayo de 2026',
    exc:'La fibra natural que raspa de verdad: mantenimiento, durabilidad bajo porche y cómo distinguir un buen coco de uno malo.',
-   link:'#articulos', tx:'tx-coco'},
-  {title:'Instalar césped alrededor de la piscina paso a paso', date:'5 de mayo de 2026',
+   tx:'tx-coco',
+   content:`<p>Con toda la variedad de felpudos sintéticos que existen hoy, la <strong>fibra de coco</strong> sigue siendo la elegida por la mayoría de hogares para la puerta de entrada. Y no es casualidad: ninguna fibra sintética raspa y retiene la suciedad igual de bien.</p>
+     <h2>Qué hace bueno a un felpudo de coco</h2>
+     <p>El grosor de la fibra (en Lucahome trabajamos con 17 mm) marca la diferencia entre un felpudo que dura un año y uno que aguanta cinco. Una base de PVC flexible pero pesada evita que resbale, y una tinta UV de calidad no destiñe con el sol de un porche orientado al sur.</p>
+     <h2>Mantenimiento: lo justo y necesario</h2>
+     <p>Basta con sacudirlo una vez a la semana y pasarle un cepillo de cerdas duras si se apelmaza. No hace falta lavarlo con agua salvo manchas puntuales, y conviene evitar dejarlo empapado varios días seguidos.</p>
+     <h3>Cómo distinguir un buen coco de uno malo</h3>
+     <ul><li>Fibra que "raspa" al pasar la mano, no que se dobla blanda.</li><li>Base gruesa que no se curva por las esquinas al poco tiempo.</li><li>Impresión con relieve, no solo pintada en la superficie.</li></ul>
+     <p>Nuestros felpudos personalizados con texto y los diseños de coco al corte usan exactamente esta misma fibra de 17 mm.</p>`},
+  {slug:'instalar-cesped-piscina-paso-a-paso', title:'Instalar césped alrededor de la piscina paso a paso', date:'5 de mayo de 2026',
    exc:'Drenaje, juntas invisibles y bordes perfectos: la guía completa con la lista de accesorios que necesitas.',
-   tx:'tx-grass-high', link:'#articulos'},
+   tx:'tx-grass-high',
+   content:`<p>La zona de alrededor de una piscina es de las más exigentes para el césped artificial: recibe cloro, sol directo casi todo el año y pies descalzos mojados. Con la preparación correcta, el resultado es una superficie que no quema al sol y no se encharca.</p>
+     <h2>1. Preparación de la base</h2>
+     <p>Retira 5-8 cm de tierra vegetal y compacta con zahorra. Un buen drenaje de base es tan importante como el propio césped: sin él, el agua se queda estancada bajo la fibra.</p>
+     <h2>2. Las juntas, el punto crítico</h2>
+     <p>Usa cinta de unión autoadhesiva por el reverso y respeta siempre el sentido de la fibra entre rollos: es lo que hace que la junta sea invisible.</p>
+     <h2>3. Fijación perimetral</h2>
+     <p>Las piquetas galvanizadas cada 15-20 cm en el borde evitan que el césped "respire" con los cambios de temperatura y se levante con el tiempo.</p>
+     <h3>Lista de accesorios necesarios</h3>
+     <ul><li>Cinta de unión autoadhesiva</li><li>Piquetas de anclaje galvanizadas</li><li>Banda perimetral</li><li>Cepillo de cerdas para el acabado final</li></ul>
+     <p>Con dos personas, una terraza de 12-15 m² se instala en una mañana.</p>`},
 ];
+
+function postExcerpt(html){
+  const d = document.createElement('div'); d.innerHTML = html || '';
+  return d.textContent.replace(/\s+/g,' ').trim();
+}
 
 function renderPosts(posts){
   const grid = document.getElementById('artGrid');
   if (!grid) return;
   grid.innerHTML = posts.map(a => `
-    <a class="art-card" href="${a.link}" ${a.external ? 'rel="bookmark"' : ''}>
+    <a class="art-card" href="#/articulo/${encodeURIComponent(a.slug)}">
       <div class="art-cover">${a.img ? `<img src="${a.img}" alt="" loading="lazy">` : `<div class="tx ${a.tx || 'tx-coco'}"></div>`}</div>
       <div class="art-body">
         <span class="art-date">${a.date}</span>
@@ -3827,6 +3986,9 @@ function renderPosts(posts){
     </a>`).join('');
 }
 renderPosts(DEMO_POSTS);
+window.LUCA = window.LUCA || {};
+window.LUCA.posts = {};
+DEMO_POSTS.forEach(a => { window.LUCA.posts[a.slug] = a; });
 
 /* ---------- Router ---------- */
 function openPDP(slug){
@@ -3859,17 +4021,25 @@ function closePDP(){
 function handleRoute(){
   const mp = location.hash.match(/^#\/producto\/(.+)$/);
   const mc = location.hash.match(/^#\/categoria\/(.+)$/);
+  const ma = location.hash.match(/^#\/articulo\/(.+)$/);
   if (mp){
     closeCat();
+    closePost();
     openPDP(decodeURIComponent(mp[1]));
   } else if (mc){
     closePDP();
+    closePost();
     openCat(decodeURIComponent(mc[1]));
     document.getElementById('mobileMenu').classList.remove('open');
-  } else {
-    const wasOpen = !pdpView.hidden || !catView.hidden;
+  } else if (ma){
     closePDP();
     closeCat();
+    openPost(decodeURIComponent(ma[1]));
+  } else {
+    const wasOpen = !pdpView.hidden || !catView.hidden || !postView.hidden;
+    closePDP();
+    closeCat();
+    closePost();
     homeView.hidden = false;
     if (wasOpen && location.hash.length > 1){
       const el = document.getElementById(location.hash.slice(1));
@@ -4127,17 +4297,17 @@ function persoValidate(){
    };
    ===================================================== */
 (function(){
-  window.LUCA = {live:false};
+  window.LUCA = Object.assign({live:false}, window.LUCA);
   const CFG = window.LUCAHOME_CONFIG;
   if (!CFG || !CFG.wooUrl) return; /* modo demo */
 
   const API = (CFG.restUrl || CFG.wooUrl.replace(/\/+$/,'') + '/wp-json/wc/store/v1').replace(/\/+$/,'');
-  window.LUCA = {
+  window.LUCA = Object.assign(window.LUCA, {
     live: true,
     checkoutUrl: CFG.checkoutUrl || CFG.wooUrl.replace(/\/+$/,'') + '/checkout/',
     nonce: CFG.storeApiNonce || '',
     cats: null,
-  };
+  });
 
   /* SEO por defecto: si Yoast define título/descripción para la página, mandan */
   if (CFG.seoTitle) DEFAULT_SEO.title = CFG.seoTitle;
@@ -4168,18 +4338,23 @@ function persoValidate(){
       .then(r => r.ok ? r.json() : [])
       .then(posts => {
         if (!Array.isArray(posts) || !posts.length) return;
-        renderPosts(posts.map(w => ({
+        const mapped = posts.map(w => ({
+          slug: w.slug,
           title: strip(w.title && w.title.rendered),
           exc: strip(w.excerpt && w.excerpt.rendered).slice(0, 140) + '…',
+          content: (w.content && w.content.rendered) || '',
           date: new Date(w.date).toLocaleDateString('es-ES', {day:'numeric', month:'long', year:'numeric'}),
-          link: w.link, external: true,
+          permalink: w.link,
           img: (w._embedded && w._embedded['wp:featuredmedia'] && w._embedded['wp:featuredmedia'][0] &&
                 (w._embedded['wp:featuredmedia'][0].media_details &&
                  w._embedded['wp:featuredmedia'][0].media_details.sizes &&
                  w._embedded['wp:featuredmedia'][0].media_details.sizes.medium_large &&
                  w._embedded['wp:featuredmedia'][0].media_details.sizes.medium_large.source_url)
                 || (w._embedded['wp:featuredmedia'][0] && w._embedded['wp:featuredmedia'][0].source_url)) || null,
-        })));
+        }));
+        window.LUCA.posts = window.LUCA.posts || {};
+        mapped.forEach(a => { window.LUCA.posts[a.slug] = a; });
+        renderPosts(mapped);
       }).catch(() => {});
   }
 

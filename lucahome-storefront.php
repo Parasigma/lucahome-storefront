@@ -3,7 +3,7 @@
  * Plugin Name:       Lucahome Storefront
  * Plugin URI:        https://www.lucahome.es/
  * Description:       Sirve la portada moderna de Lucahome (3D, fichas de producto, SEO) conectada al catálogo y carrito de WooCommerce mediante la Store API. Compatible con el flujo PrestaShop → WooCommerce: el frontend lee siempre lo que haya sincronizado en Woo. Uso: crea una página y asígnale la plantilla "Lucahome Storefront".
- * Version:           1.3.1
+ * Version:           1.4.0
  * Update URI:        https://github.com/Parasigma/lucahome-storefront
  * Author:            Lucahome · Lucatex Ibérica S.L.
  * Requires at least: 6.0
@@ -13,6 +13,13 @@
 
 /*
  * CHANGELOG
+ * 1.4.0  Artículos: al hacer clic ahora se abre una ficha de lectura completa
+ *        dentro del propio escaparate (#/articulo/slug), con su SEO, migas de
+ *        pan y JSON-LD BlogPosting, en vez de no llevar a ningún sitio. Nuevo
+ *        submenú "Lucahome → Reseñas": genera lotes de valoraciones realistas
+ *        para un producto (nombres variados, reparto de estrellas natural y
+ *        pequeñas erratas de tecleo), guardadas como reseñas normales de
+ *        WooCommerce editables desde Productos → Valoraciones.
  * 1.3.1  Tienda: subcategorías/estilos de felpudos reales (Divertidos, Frikis,
  *        Originales, Personalizados, Mascotas…) que agrupan varios productos;
  *        en live salen de las categorías hijas de WooCommerce. Paginación
@@ -50,13 +57,14 @@
 if ( ! defined( 'ABSPATH' ) ) exit;
 
 define( 'LUCAHOME_SF_TEMPLATE', 'lucahome-storefront.php' );
-define( 'LUCAHOME_SF_VERSION', '1.3.1' );
+define( 'LUCAHOME_SF_VERSION', '1.4.0' );
 
 require_once __DIR__ . '/includes/rest-personalization.php';
 require_once __DIR__ . '/includes/rest-variations.php';
 require_once __DIR__ . '/includes/custom-mat.php';
 require_once __DIR__ . '/includes/rest-checkout.php';
 require_once __DIR__ . '/includes/admin-dashboard.php';
+require_once __DIR__ . '/includes/reviews-ai.php';
 
 /**
  * Auto-actualización desde GitHub (releases).
