@@ -40,7 +40,7 @@ export default async function Landing({ params }: { params: Promise<{ locale: st
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(60rem_30rem_at_80%_-10%,rgba(29,145,79,0.14),transparent),radial-gradient(40rem_24rem_at_0%_20%,rgba(11,29,58,0.06),transparent)]" />
-        <div className="container-x grid items-center gap-14 py-16 lg:grid-cols-[1.15fr_0.85fr] lg:py-24">
+        <div className="container-x grid items-center gap-14 py-16 lg:grid-cols-[1.1fr_0.9fr] lg:gap-20 lg:py-20">
           <div>
             <span className="inline-flex items-center gap-2 rounded-full border border-brand/25 bg-brand-soft px-3.5 py-1.5 text-xs font-bold text-brand-dark">
               <BadgeCheck size={14} aria-hidden="true" /> {t.heroBadge}
@@ -60,26 +60,30 @@ export default async function Landing({ params }: { params: Promise<{ locale: st
             </ul>
           </div>
 
-          <div className="card relative mx-auto w-full max-w-md p-7">
-            <div className="flex items-center justify-between border-b border-line pb-5">
-              <div className="flex items-center gap-3">
-                <span className="grid h-10 w-10 place-items-center rounded-xl bg-ink text-white"><FileText size={18} aria-hidden="true" /></span>
+          <div className="relative mx-auto w-full max-w-lg lg:max-w-none">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/hero.webp" alt="" width={1024} height={765} fetchPriority="high"
+              className="aspect-[4/3] w-full rounded-3xl object-cover object-[32%_center] shadow-card lg:aspect-[5/6]"
+            />
+            <div className="card relative mx-4 -mt-16 p-5 sm:mx-auto sm:max-w-sm lg:absolute lg:-start-14 lg:bottom-8 lg:mx-0 lg:mt-0 lg:w-[19rem]">
+              <div className="flex items-center gap-2.5 border-b border-line pb-3.5">
+                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-ink text-white"><FileText size={15} aria-hidden="true" /></span>
                 <span className="text-sm font-bold">{t.cardTitle}</span>
               </div>
-              <span dir="ltr" className="rounded-md bg-paper px-2 py-1 text-[11px] font-bold text-muted">RT-7K2M9QXA</span>
-            </div>
-            <ol className="relative mt-6 space-y-5">
-              <span aria-hidden="true" className="absolute start-[13px] top-2 bottom-2 w-px bg-brand/30" />
-              {cardSteps.map((s) => (
-                <li key={s} className="relative flex items-center gap-4">
-                  <span className="relative z-10 grid h-7 w-7 shrink-0 place-items-center rounded-full bg-brand text-white"><Check size={14} strokeWidth={3} aria-hidden="true" /></span>
-                  <span className="text-sm font-semibold">{s}</span>
-                </li>
-              ))}
-            </ol>
-            <div className="mt-7 flex items-center justify-between rounded-xl bg-brand-soft px-4 py-3.5">
-              <span className="text-sm font-semibold text-brand-dark">{t.cardFooter}</span>
-              <span className="text-sm font-extrabold text-brand-dark">{t.cardTime}</span>
+              <ol className="relative mt-4 space-y-3">
+                <span aria-hidden="true" className="absolute start-[11px] top-2 bottom-2 w-px bg-brand/30" />
+                {cardSteps.map((s) => (
+                  <li key={s} className="relative flex items-center gap-3">
+                    <span className="relative z-10 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand text-white"><Check size={12} strokeWidth={3} aria-hidden="true" /></span>
+                    <span className="text-[13px] font-semibold leading-snug">{s}</span>
+                  </li>
+                ))}
+              </ol>
+              <div className="mt-4 flex items-center justify-between gap-3 rounded-xl bg-brand-soft px-3.5 py-2.5">
+                <span className="text-xs font-semibold text-brand-dark">{t.cardFooter}</span>
+                <span className="text-sm font-extrabold text-brand-dark">{t.cardTime}</span>
+              </div>
             </div>
           </div>
         </div>
