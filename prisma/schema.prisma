@@ -1,0 +1,154 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING_PAYMENT
+  PAID // pagado, a la espera de documentos
+  IN_REVIEW // documentos enviados, plazo de 24 h en marcha
+  COMPLETED // presentado y justificante enviado
+  REFUNDED
+  CANCELLED
+}
+
+enum DocumentKind {
+  CUSTOMER
+  RECEIPT
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  role         Role     @default(USER)
+  locale       String   @default("es")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  sessions Session[]
+  orders   Order[]
+  resets   PasswordReset[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model PasswordReset {
+  id        String    @id @default(cuid())
+  tokenHash String    @unique
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+}
+
+model Order {
+  id        String      @id @default(cuid())
+  reference String      @unique
+  userId    String
+  user      User        @relation(fields: [userId], references: [id])
+  status    OrderStatus @default(PENDING_PAYMENT)
+  locale    String      @default("es")
+
+  // Importes en céntimos, congelados en el momento de la compra
+  feeCents     Int
+  serviceCents Int
+  taxesCents   Int
+  vatCents     Int
+  totalCents   Int
+  currency     String @default("eur")
+
+  stripeSessionId       String? @unique
+  stripePaymentIntentId String?
+  demo                  Boolean @default(false)
+
+  // Datos del contribuyente
+  fullName String?
+  taxId    String?
+  country  String?
+  phone    String?
+  comments String?
+
+  adminNotes String?
+
+  paidAt      DateTime?
+  submittedAt DateTime?
+  dueAt       DateTime?
+  completedAt DateTime?
+  refundedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  documents Document[]
+
+  @@index([userId])
+  @@index([status, dueAt])
+  @@index([createdAt])
+}
+
+model Document {
+  id         String       @id @default(cuid())
+  orderId    String
+  order      Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  kind       DocumentKind @default(CUSTOMER)
+  filename   String
+  storedName String       @unique
+  mime       String
+  size       Int
+  createdAt  DateTime     @default(now())
+
+  @@index([orderId])
+}
+
+model Setting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
+}
+
+model ContentOverride {
+  locale    String
+  section   String
+  key       String
+  value     String
+  updatedAt DateTime @updatedAt
+
+  @@id([locale, section, key])
+}
+
+model RateLimit {
+  key     String   @id
+  count   Int
+  resetAt DateTime
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  actor     String
+  action    String
+  detail    String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}

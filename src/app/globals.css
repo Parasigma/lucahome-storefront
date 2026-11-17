@@ -1,0 +1,77 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #0b1d3a;
+  --color-ink-soft: #3d4f69;
+  --color-muted: #66758a;
+  --color-paper: #f5f7f4;
+  --color-line: #e1e7e2;
+  --color-brand: #1d914f;
+  --color-brand-dark: #14703b;
+  --color-brand-soft: #e3f4ea;
+  --color-danger: #b42318;
+  --color-warn: #b25e09;
+  --font-sans: "Manrope Variable", "Noto Sans Arabic Variable", ui-sans-serif, system-ui, sans-serif;
+  --shadow-card: 0 1px 2px rgb(11 29 58 / 0.04), 0 12px 32px -12px rgb(11 29 58 / 0.12);
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
+}
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3 {
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+:lang(ar) h1, :lang(ar) h2, :lang(ar) h3 {
+  letter-spacing: 0;
+  line-height: 1.35;
+}
+:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
+}
+
+@utility container-x {
+  @apply mx-auto w-full max-w-6xl px-5 sm:px-8;
+}
+@utility btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60;
+}
+@utility btn-primary {
+  @apply btn bg-ink text-white hover:bg-ink-soft;
+}
+@utility btn-brand {
+  @apply btn bg-brand text-white hover:bg-brand-dark;
+}
+@utility btn-ghost {
+  @apply btn border border-line bg-white text-ink hover:border-ink/30;
+}
+@utility btn-danger {
+  @apply btn border border-danger/30 bg-white text-danger hover:bg-danger/5;
+}
+@utility card {
+  @apply rounded-2xl border border-line bg-white shadow-card;
+}
+@utility kicker {
+  @apply text-xs font-bold uppercase tracking-[0.14em] text-brand-dark;
+}
+@utility field {
+  @apply block w-full rounded-xl border border-line bg-white px-4 py-3 text-sm text-ink placeholder:text-muted/70 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20;
+}
+@utility label {
+  @apply mb-1.5 block text-sm font-semibold text-ink;
+}
+@utility alert-error {
+  @apply rounded-xl border border-danger/20 bg-danger/5 px-4 py-3 text-sm text-danger;
+}
+@utility alert-ok {
+  @apply rounded-xl border border-brand/20 bg-brand-soft px-4 py-3 text-sm text-brand-dark;
+}
+:lang(ar) .kicker { letter-spacing: 0; }
