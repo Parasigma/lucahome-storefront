@@ -67,3 +67,14 @@ y conviene un pooler de conexiones (PgBouncer) delante de PostgreSQL. Precios y 
 - `src/i18n/*.ts` — textos por idioma (`es` es la referencia).
 - `src/app/(site)/[locale]` — web pública y área de cliente · `src/app/admin` — panel · `src/app/api` — subidas, descargas, webhook.
 - `src/app/actions` — lógica de servidor · `src/lib` — autenticación, pagos, correo, almacenamiento · `prisma/schema.prisma` — datos.
+
+## Escaparate estático (GitHub Pages)
+
+La rama `gh-pages` contiene una copia estática de la landing en los 6 idiomas, solo para enseñarla:
+no tiene registro, pago ni panel. Para regenerarla tras cambiar textos, precios o diseño, con la web arrancada:
+
+```bash
+PAGES_URL=https://parasigma.github.io/lucahome-storefront node scripts/build-pages.mjs http://localhost:3000 /lucahome-storefront pages-dist
+```
+
+y sube el contenido de `pages-dist` a la rama `gh-pages`.
